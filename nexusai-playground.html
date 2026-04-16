@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NexusAI Playground</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@300..700&family=Geist:wght@300..700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --text-xs:   clamp(0.75rem,  0.7rem  + 0.25vw, 0.875rem);
+  --text-sm:   clamp(0.875rem, 0.8rem  + 0.35vw, 1rem);
+  --text-base: clamp(1rem,     0.95rem + 0.25vw, 1.125rem);
+  --text-lg:   clamp(1.125rem, 1rem    + 0.75vw, 1.5rem);
+  --text-xl:   clamp(1.5rem,   1.2rem  + 1.25vw, 2.25rem);
+  --space-1: 0.25rem; --space-2: 0.5rem; --space-3: 0.75rem; --space-4: 1rem;
+  --space-5: 1.25rem; --space-6: 1.5rem; --space-8: 2rem; --space-10: 2.5rem;
+  --space-12: 3rem; --space-16: 4rem;
+  --radius-sm: 0.25rem; --radius-md: 0.375rem; --radius-lg: 0.5rem;
+  --radius-xl: 0.75rem; --radius-full: 9999px;
+  --transition-interactive: 160ms cubic-bezier(0.16, 1, 0.3, 1);
+  --font-body: 'Geist', 'Inter', sans-serif;
+  --font-mono: 'Geist Mono', 'Fira Code', monospace;
+}
+:root, [data-theme="light"] {
+  --color-bg: #f5f5f3; --color-surface: #fafaf9; --color-surface-2: #ffffff;
+  --color-surface-offset: #ededea; --color-surface-dynamic: #e4e4e0;
+  --color-divider: #d9d9d4; --color-border: #cececa;
+  --color-text: #1a1a18; --color-text-muted: #6b6b67; --color-text-faint: #adadaa;
+  --color-text-inverse: #f8f8f6;
+  --color-primary: #0b7c83; --color-primary-hover: #09626a; --color-primary-active: #064a50;
+  --color-primary-highlight: #cddedd;
+  --color-error: #c0392b; --color-error-highlight: #fdecea;
+  --color-success: #287a3c; --color-success-highlight: #d4f0db;
+  --color-warning: #b45309; --color-warning-highlight: #fef3c7;
+  --shadow-sm: 0 1px 3px oklch(0.2 0.01 200 / 0.06);
+  --shadow-md: 0 4px 12px oklch(0.2 0.01 200 / 0.09);
+  --shadow-lg: 0 12px 32px oklch(0.2 0.01 200 / 0.13);
+}
+[data-theme="dark"] {
+  --color-bg: #0e0e0d; --color-surface: #141413; --color-surface-2: #1a1a19;
+  --color-surface-offset: #1f1f1e; --color-surface-dynamic: #2a2a28;
+  --color-divider: #222221; --color-border: #313130;
+  --color-text: #e2e2de; --color-text-muted: #737370; --color-text-faint: #4a4a48;
+  --color-text-inverse: #1a1a18;
+  --color-primary: #3fa8b0; --color-primary-hover: #2e8e96; --color-primary-active: #1f727a;
+  --color-primary-highlight: #1a3537;
+  --color-error: #e05252; --color-error-highlight: #2a1515;
+  --color-success: #52b86a; --color-success-highlight: #122018;
+  --color-warning: #f0a84a; --color-warning-highlight: #271b08;
+  --shadow-sm: 0 1px 3px oklch(0 0 0 / 0.25);
+  --shadow-md: 0 4px 12px oklch(0 0 0 / 0.35);
+  --shadow-lg: 0 12px 32px oklch(0 0 0 / 0.5);
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; scroll-behavior: smooth; }
+body { min-height: 100dvh; font-family: var(--font-body); font-size: var(--text-sm); color: var(--color-text); background: var(--color-bg); display: flex; flex-direction: column; overflow: hidden; height: 100dvh; }
+input, button, textarea, select { font: inherit; color: inherit; }
+button { cursor: pointer; background: none; border: none; }
+:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; border-radius: var(--radius-sm); }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; } }
+a, button, input, textarea, select { transition: color var(--transition-interactive), background var(--transition-interactive), border-color var(--transition-interactive), box-shadow var(--transition-interactive), opacity var(--transition-interactive); }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border-width: 0; }
+#app { display: flex; flex-direction: column; height: 100dvh; overflow: hidden; }
+#topbar { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-2) var(--space-4); background: var(--color-surface); border-bottom: 1px solid var(--color-border); flex-shrink: 0; min-height: 48px; z-index: 100; }
+#logo { display: flex; align-items: center; gap: var(--space-2); color: var(--color-text); text-decoration: none; flex-shrink: 0; }
+#logo svg { color: var(--color-primary); }
+#logo-text { font-size: var(--text-sm); font-weight: 600; letter-spacing: -0.01em; }
+.topbar-divider { width: 1px; height: 20px; background: var(--color-border); flex-shrink: 0; }
+#url-bar-wrap { flex: 1; display: flex; align-items: center; gap: var(--space-2); background: var(--color-bg); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 0 var(--space-3); min-height: 36px; transition: border-color var(--transition-interactive), box-shadow var(--transition-interactive); }
+#url-bar-wrap:focus-within { border-color: var(--color-primary); box-shadow: 0 0 0 3px oklch(from var(--color-primary) l c h / 0.15); }
+#url-bar-wrap svg { color: var(--color-text-muted); flex-shrink: 0; }
+#url-input { flex: 1; background: none; border: none; outline: none; font-family: var(--font-mono); font-size: var(--text-xs); color: var(--color-text); padding: 0; min-width: 0; }
+#url-input::placeholder { color: var(--color-text-faint); }
+#go-btn { display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; background: var(--color-primary); color: var(--color-text-inverse); border-radius: var(--radius-md); flex-shrink: 0; }
+#go-btn:hover { background: var(--color-primary-hover); }
+#go-btn:active { background: var(--color-primary-active); }
+.topbar-actions { display: flex; align-items: center; gap: var(--space-1); flex-shrink: 0; }
+.icon-btn { display: flex; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: var(--radius-md); color: var(--color-text-muted); }
+.icon-btn:hover { background: var(--color-surface-offset); color: var(--color-text); }
+.icon-btn:active { background: var(--color-surface-dynamic); }
+#tabs-bar { display: flex; align-items: center; gap: 0; background: var(--color-surface); border-bottom: 1px solid var(--color-border); padding: 0 var(--space-2); flex-shrink: 0; overflow-x: auto; scrollbar-width: none; min-height: 38px; }
+#tabs-bar::-webkit-scrollbar { display: none; }
+.tab { display: flex; align-items: center; gap: var(--space-2); padding: 0 var(--space-3); height: 38px; border-bottom: 2px solid transparent; cursor: pointer; white-space: nowrap; color: var(--color-text-muted); font-size: var(--text-xs); flex-shrink: 0; position: relative; max-width: 180px; }
+.tab:hover { color: var(--color-text); background: color-mix(in oklch, var(--color-primary) 5%, transparent); }
+.tab.active { color: var(--color-primary); border-bottom-color: var(--color-primary); background: color-mix(in oklch, var(--color-primary) 8%, transparent); }
+.tab-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; min-width: 0; }
+.tab-close { display: flex; align-items: center; justify-content: center; width: 18px; height: 18px; border-radius: var(--radius-sm); color: var(--color-text-faint); flex-shrink: 0; }
+.tab-close:hover { background: var(--color-surface-offset); color: var(--color-error); }
+#new-tab-btn { display: flex; align-items: center; justify-content: center; width: 30px; height: 30px; border-radius: var(--radius-md); color: var(--color-text-muted); margin-left: var(--space-1); flex-shrink: 0; }
+#new-tab-btn:hover { background: var(--color-surface-offset); color: var(--color-text); }
+#browser-area { flex: 1; position: relative; overflow: hidden; background: var(--color-bg); }
+.tab-content { position: absolute; inset: 0; display: none; }
+.tab-content.active { display: flex; flex-direction: column; }
+iframe.web-frame { flex: 1; border: none; background: #fff; width: 100%; height: 100%; }
+.home-panel { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding: var(--space-10) var(--space-4) var(--space-6); overflow-y: auto; gap: var(--space-8); }
+.home-hero { text-align: center; }
+.home-hero h1 { font-size: var(--text-xl); font-weight: 700; letter-spacing: -0.03em; color: var(--color-text); margin-bottom: var(--space-2); }
+.home-hero p { color: var(--color-text-muted); font-size: var(--text-sm); max-width: 42ch; margin: 0 auto; }
+.home-search { width: 100%; max-width: 560px; display: flex; gap: var(--space-2); }
+.home-search input { flex: 1; padding: var(--space-3) var(--space-4); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); font-size: var(--text-sm); outline: none; color: var(--color-text); transition: border-color var(--transition-interactive), box-shadow var(--transition-interactive); }
+.home-search input:focus { border-color: var(--color-primary); box-shadow: 0 0 0 3px oklch(from var(--color-primary) l c h / 0.15); }
+.home-search button { padding: var(--space-3) var(--space-5); background: var(--color-primary); color: var(--color-text-inverse); border-radius: var(--radius-lg); font-weight: 600; font-size: var(--text-sm); }
+.home-search button:hover { background: var(--color-primary-hover); }
+.quick-links { width: 100%; max-width: 720px; }
+.quick-links h2 { font-size: var(--text-xs); font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-text-muted); margin-bottom: var(--space-3); }
+.quick-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: var(--space-2); }
+.quick-card { display: flex; flex-direction: column; gap: var(--space-2); padding: var(--space-3) var(--space-4); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); cursor: pointer; text-decoration: none; color: var(--color-text); transition: border-color var(--transition-interactive), box-shadow var(--transition-interactive), transform 120ms; }
+.quick-card:hover { border-color: var(--color-primary); box-shadow: var(--shadow-sm); transform: translateY(-1px); }
+.quick-card:active { transform: translateY(0); }
+.quick-icon { font-size: 1.2rem; line-height: 1; }
+.quick-name { font-size: var(--text-xs); font-weight: 600; color: var(--color-text); }
+.quick-desc { font-size: var(--text-xs); color: var(--color-text-muted); line-height: 1.4; }
+.api-panel { width: 100%; max-width: 720px; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-xl); overflow: hidden; }
+.api-panel-header { display: flex; align-items: center; justify-content: space-between; padding: var(--space-3) var(--space-4); border-bottom: 1px solid var(--color-border); }
+.api-panel-header h2 { font-size: var(--text-sm); font-weight: 600; }
+.api-badge { font-family: var(--font-mono); font-size: var(--text-xs); padding: 2px var(--space-2); border-radius: var(--radius-full); background: var(--color-primary-highlight); color: var(--color-primary); font-weight: 600; }
+.api-body { padding: var(--space-4); display: flex; flex-direction: column; gap: var(--space-3); }
+.field-row { display: flex; flex-direction: column; gap: var(--space-1); }
+.field-label { font-size: var(--text-xs); font-weight: 500; color: var(--color-text-muted); }
+.field-input { width: 100%; padding: var(--space-2) var(--space-3); background: var(--color-bg); border: 1px solid var(--color-border); border-radius: var(--radius-md); font-family: var(--font-mono); font-size: var(--text-xs); color: var(--color-text); outline: none; resize: vertical; min-height: 36px; transition: border-color var(--transition-interactive), box-shadow var(--transition-interactive); }
+.field-input:focus { border-color: var(--color-primary); box-shadow: 0 0 0 3px oklch(from var(--color-primary) l c h / 0.15); }
+.field-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); }
+.api-actions { display: flex; gap: var(--space-2); }
+.btn-primary { padding: var(--space-2) var(--space-5); background: var(--color-primary); color: var(--color-text-inverse); border-radius: var(--radius-md); font-weight: 600; font-size: var(--text-xs); display: flex; align-items: center; gap: var(--space-2); }
+.btn-primary:hover { background: var(--color-primary-hover); }
+.btn-secondary { padding: var(--space-2) var(--space-4); border: 1px solid var(--color-border); border-radius: var(--radius-md); font-size: var(--text-xs); color: var(--color-text-muted); }
+.btn-secondary:hover { background: var(--color-surface-offset); color: var(--color-text); }
+#api-response { font-family: var(--font-mono); font-size: var(--text-xs); background: var(--color-bg); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-3); min-height: 100px; max-height: 260px; overflow-y: auto; color: var(--color-text-muted); white-space: pre-wrap; word-break: break-all; display: none; }
+#api-response.visible { display: block; }
+#api-response.streaming { color: var(--color-primary); }
+#api-response.error-state { color: var(--color-error); }
+#statusbar { display: flex; align-items: center; gap: var(--space-4); padding: 0 var(--space-4); height: 24px; background: var(--color-surface); border-top: 1px solid var(--color-border); flex-shrink: 0; }
+#statusbar span { font-family: var(--font-mono); font-size: 11px; color: var(--color-text-faint); }
+#status-indicator { display: flex; align-items: center; gap: var(--space-1); }
+.status-dot { width: 6px; height: 6px; border-radius: var(--radius-full); background: var(--color-text-faint); }
+.status-dot.ready { background: var(--color-success); }
+.status-dot.loading { background: var(--color-warning); animation: pulse-dot 1s ease-in-out infinite; }
+.status-dot.error { background: var(--color-error); }
+@keyframes pulse-dot { 0%,100%{opacity:1} 50%{opacity:0.3} }
+#settings-panel { position: fixed; top: 0; right: 0; bottom: 0; width: min(400px, 100vw); background: var(--color-surface); border-left: 1px solid var(--color-border); box-shadow: var(--shadow-lg); z-index: 200; display: flex; flex-direction: column; transform: translateX(100%); transition: transform 240ms cubic-bezier(0.16, 1, 0.3, 1); }
+#settings-panel.open { transform: translateX(0); }
+#settings-overlay { position: fixed; inset: 0; background: oklch(0 0 0 / 0.5); z-index: 199; display: none; }
+#settings-overlay.open { display: block; }
+.settings-header { display: flex; align-items: center; justify-content: space-between; padding: var(--space-4) var(--space-5); border-bottom: 1px solid var(--color-border); }
+.settings-header h2 { font-size: var(--text-sm); font-weight: 600; }
+.settings-body { flex: 1; overflow-y: auto; padding: var(--space-5); display: flex; flex-direction: column; gap: var(--space-5); }
+.settings-section h3 { font-size: var(--text-xs); font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--color-text-muted); margin-bottom: var(--space-3); }
+.settings-row { display: flex; flex-direction: column; gap: var(--space-1); margin-bottom: var(--space-3); }
+.settings-row label { font-size: var(--text-xs); font-weight: 500; color: var(--color-text-muted); }
+.settings-row input, .settings-row select, .settings-row textarea { width: 100%; padding: var(--space-2) var(--space-3); background: var(--color-bg); border: 1px solid var(--color-border); border-radius: var(--radius-md); font-family: var(--font-mono); font-size: var(--text-xs); color: var(--color-text); outline: none; resize: vertical; }
+.settings-row input:focus, .settings-row select:focus, .settings-row textarea:focus { border-color: var(--color-primary); box-shadow: 0 0 0 3px oklch(from var(--color-primary) l c h / 0.15); }
+.settings-hint { font-size: 11px; color: var(--color-text-faint); margin-top: var(--space-1); }
+.settings-footer { padding: var(--space-4) var(--space-5); border-top: 1px solid var(--color-border); }
+.btn-save { width: 100%; padding: var(--space-3); background: var(--color-primary); color: var(--color-text-inverse); border-radius: var(--radius-md); font-weight: 600; font-size: var(--text-sm); }
+.btn-save:hover { background: var(--color-primary-hover); }
+#toast { position: fixed; bottom: var(--space-6); left: 50%; transform: translateX(-50%) translateY(16px); background: var(--color-surface-dynamic); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: var(--space-2) var(--space-4); font-size: var(--text-xs); color: var(--color-text); box-shadow: var(--shadow-md); opacity: 0; transition: opacity 200ms, transform 200ms; pointer-events: none; z-index: 300; white-space: nowrap; }
+#toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--color-surface-dynamic); border-radius: var(--radius-full); }
+::-webkit-scrollbar-thumb:hover { background: var(--color-text-faint); }
+@media (max-width: 600px) { .field-row-2 { grid-template-columns: 1fr; } #logo-text { display: none; } .home-panel { padding: var(--space-6) var(--space-3); } }
+</style>
+</head>
+<body>
+<div id="app">
+  <header id="topbar">
+    <a id="logo" href="#" onclick="openHome(); return false;" aria-label="NexusAI Playground">
+      <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+      <span id="logo-text">NexusAI</span>
+    </a>
+    <div class="topbar-divider" aria-hidden="true"></div>
+    <div class="topbar-actions">
+      <button class="icon-btn" id="nav-back" aria-label="Atras" onclick="navBack()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+      </button>
+      <button class="icon-btn" id="nav-forward" aria-label="Adelante" onclick="navForward()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </button>
+      <button class="icon-btn" id="nav-reload" aria-label="Recargar" onclick="navReload()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+      </button>
+    </div>
+    <form id="url-bar-wrap" onsubmit="navigate(event)">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <label for="url-input" class="sr-only">URL o busqueda</label>
+      <input id="url-input" type="text" placeholder="Busca, pega una URL, o escribe un endpoint..." autocomplete="off" spellcheck="false">
+      <button type="submit" id="go-btn" aria-label="Ir">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </button>
+    </form>
+    <div class="topbar-actions">
+      <button class="icon-btn" id="theme-btn" data-theme-toggle aria-label="Alternar tema">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+      <button class="icon-btn" id="settings-btn" aria-label="Configuracion" onclick="toggleSettings()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 2.12 12.03l-1.58.54a8 8 0 0 0-3.14-10.8zM12 22a10 10 0 0 1-8.93-5.5l.92-1.27A8 8 0 0 0 12 20zM4.93 4.93a10 10 0 0 0-.86 13.5l1.47-.74A8 8 0 0 1 6.4 6.4z"/></svg>
+      </button>
+    </div>
+  </header>
+  <div id="tabs-bar" role="tablist" aria-label="Pestanas abiertas">
+    <button class="icon-btn" id="new-tab-btn" aria-label="Nueva pestana" onclick="newTab()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+    </button>
+  </div>
+  <main id="browser-area"></main>
+  <footer id="statusbar">
+    <div id="status-indicator">
+      <div class="status-dot ready" id="status-dot"></div>
+      <span id="status-text">Listo</span>
+    </div>
+    <span id="status-url" style="flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"></span>
+    <span id="status-time"></span>
+  </footer>
+</div>
+<div id="settings-overlay" onclick="toggleSettings()"></div>
+<aside id="settings-panel" role="dialog" aria-modal="true" aria-label="Configuracion">
+  <div class="settings-header">
+    <h2>Configuracion</h2>
+    <button class="icon-btn" onclick="toggleSettings()" aria-label="Cerrar configuracion">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+    </button>
+  </div>
+  <div class="settings-body">
+    <div class="settings-section">
+      <h3>API Principal (OpenAI compatible)</h3>
+      <div class="settings-row">
+        <label for="s-base-url">Base URL</label>
+        <input id="s-base-url" type="text" placeholder="https://tu-space.hf.space/v1">
+        <p class="settings-hint">Tu Space de HF, servidor local, OpenRouter, Groq, etc.</p>
+      </div>
+      <div class="settings-row">
+        <label for="s-api-key">API Key</label>
+        <input id="s-api-key" type="password" placeholder="sk-... o Bearer token (opcional)">
+        <p class="settings-hint">Requerido para OpenAI, Groq, OpenRouter.</p>
+      </div>
+      <div class="settings-row">
+        <label for="s-model">Modelo</label>
+        <input id="s-model" type="text" placeholder="gemma-4-e4b-it / gpt-4o / gemma-3-27b-it">
+        <p class="settings-hint">Nombre exacto que acepta el endpoint.</p>
+      </div>
+    </div>
+    <div class="settings-section">
+      <h3>Parametros de Generacion</h3>
+      <div class="settings-row">
+        <label for="s-max-tokens">Max Tokens</label>
+        <input id="s-max-tokens" type="number" value="512" min="1" max="32768">
+      </div>
+      <div class="settings-row">
+        <label for="s-temperature">Temperature</label>
+        <input id="s-temperature" type="number" value="0.7" min="0" max="2" step="0.05">
+      </div>
+      <div class="settings-row">
+        <label for="s-system">System Prompt</label>
+        <textarea id="s-system" rows="4" placeholder="Sos un asistente tecnico experto en Python, AI/ML y trading..."></textarea>
+      </div>
+    </div>
+    <div class="settings-section">
+      <h3>Busqueda Web</h3>
+      <div class="settings-row">
+        <label for="s-search-engine">Motor predeterminado</label>
+        <select id="s-search-engine">
+          <option value="https://google.com/search?q=">Google</option>
+          <option value="https://duckduckgo.com/?q=">DuckDuckGo</option>
+          <option value="https://www.bing.com/search?q=">Bing</option>
+          <option value="https://perplexity.ai/search?q=">Perplexity</option>
+          <option value="https://kagi.com/search?q=">Kagi</option>
+        </select>
+      </div>
+    </div>
+    <div class="settings-section">
+      <h3>Apariencia</h3>
+      <div class="settings-row">
+        <label for="s-theme">Tema</label>
+        <select id="s-theme" onchange="applyThemeSetting()">
+          <option value="dark">Oscuro</option>
+          <option value="light">Claro</option>
+          <option value="system">Sistema</option>
+        </select>
+      </div>
+    </div>
+  </div>
+  <div class="settings-footer">
+    <button class="btn-save" onclick="saveSettings()">Guardar configuracion</button>
+  </div>
+</aside>
+<div id="toast" aria-live="polite" aria-atomic="true"></div>
+<script>
+let tabs=[], activeTabId=null, tabCounter=0;
+let cfg={baseUrl:'',apiKey:'',model:'',maxTokens:512,temperature:0.7,systemPrompt:'Sos un asistente tecnico experto en Python, AI/ML, trading y desarrollo web. Respondas en castellano de Argentina de manera concisa y directa.',searchEngine:'https://google.com/search?q=',theme:'dark'};
+(function initTheme(){
+  const stored=sessionStorage.getItem('nx-theme');
+  const theme=stored||'dark';
+  document.documentElement.setAttribute('data-theme',theme);
+  cfg.theme=theme;
+  updateThemeIcon(theme);
+})();
+function updateThemeIcon(theme){
+  const btn=document.getElementById('theme-btn');
+  if(!btn)return;
+  if(theme==='dark'){btn.innerHTML='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>';btn.setAttribute('aria-label','Cambiar a modo claro');}
+  else{btn.innerHTML='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';btn.setAttribute('aria-label','Cambiar a modo oscuro');}
+}
+document.getElementById('theme-btn').addEventListener('click',()=>{
+  const curr=document.documentElement.getAttribute('data-theme')||'dark';
+  const next=curr==='dark'?'light':'dark';
+  document.documentElement.setAttribute('data-theme',next);
+  cfg.theme=next; sessionStorage.setItem('nx-theme',next);
+  updateThemeIcon(next); document.getElementById('s-theme').value=next;
+});
+function applyThemeSetting(){
+  const v=document.getElementById('s-theme').value;
+  const resolved=v==='system'?(matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light'):v;
+  document.documentElement.setAttribute('data-theme',resolved);
+  cfg.theme=resolved; updateThemeIcon(resolved);
+}
+function createTab(title,type,url){
+  const id=++tabCounter;
+  tabs.push({id,title:title||'Nueva pestana',type:type||'home',url:url||''});
+  renderTabs(); activateTab(id); return id;
+}
+function renderTabs(){
+  const bar=document.getElementById('tabs-bar');
+  const newBtn=document.getElementById('new-tab-btn');
+  bar.querySelectorAll('.tab').forEach(t=>t.remove());
+  tabs.forEach(tab=>{
+    const el=document.createElement('button');
+    el.className='tab'+(tab.id===activeTabId?' active':'');
+    el.setAttribute('role','tab');
+    el.setAttribute('aria-selected',tab.id===activeTabId);
+    el.dataset.tabId=tab.id;
+    el.innerHTML='<span class="tab-title">'+escHtml(tab.title)+'</span><span class="tab-close" data-close="'+tab.id+'" aria-label="Cerrar "><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg></span>';
+    el.addEventListener('click',(e)=>{ if(e.target.closest('.tab-close')){closeTab(tab.id);return;} activateTab(tab.id); });
+    bar.insertBefore(el,newBtn);
+  });
+}
+function activateTab(id){
+  activeTabId=id;
+  const tab=tabs.find(t=>t.id===id);
+  document.querySelectorAll('.tab').forEach(el=>{ const active=parseInt(el.dataset.tabId)===id; el.classList.toggle('active',active); el.setAttribute('aria-selected',active); });
+  document.querySelectorAll('.tab-content').forEach(el=>{ el.classList.toggle('active',parseInt(el.dataset.tabId)===id); });
+  if(!document.querySelector('.tab-content[data-tab-id="'+id+'"]')) buildTabContent(id,tab);
+  if(tab){ document.getElementById('url-input').value=tab.url||''; setStatus(tab.type==='home'?'Listo':tab.title,'ready'); document.getElementById('status-url').textContent=tab.url||''; }
+}
+function buildTabContent(id,tab){
+  const area=document.getElementById('browser-area');
+  const wrapper=document.createElement('div');
+  wrapper.className='tab-content active'; wrapper.dataset.tabId=id;
+  if(tab.type==='home'){ wrapper.innerHTML=buildHomePage(); }
+  else if(tab.type==='iframe'){
+    wrapper.innerHTML='<iframe class="web-frame" src="'+escHtml(tab.url)+'" title="'+escHtml(tab.title)+'" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-presentation" allow="fullscreen" loading="lazy"></iframe>';
+    const iframe=wrapper.querySelector('iframe');
+    iframe.addEventListener('load',()=>{ try{const t=iframe.contentDocument?.title;if(t)updateTabTitle(id,t);}catch(e){} setStatus('Cargado','ready'); });
+    iframe.addEventListener('error',()=>setStatus('Error al cargar','error'));
+  }
+  area.appendChild(wrapper); attachHomeEvents(wrapper);
+}
+function updateTabTitle(id,title){
+  const tab=tabs.find(t=>t.id===id);
+  if(tab){ tab.title=title.slice(0,30); renderTabs(); activateTab(id); }
+}
+function closeTab(id){
+  const idx=tabs.findIndex(t=>t.id===id);
+  tabs.splice(idx,1);
+  document.querySelector('.tab-content[data-tab-id="'+id+'"]')?.remove();
+  if(tabs.length===0){newTab();return;}
+  const next=tabs[Math.min(idx,tabs.length-1)];
+  renderTabs(); activateTab(next.id);
+}
+function newTab(){ createTab('Nueva pestana','home',''); }
+function openHome(){
+  const tab=tabs.find(t=>t.id===activeTabId);
+  if(tab){ tab.type='home';tab.url='';tab.title='Nueva pestana'; document.querySelector('.tab-content[data-tab-id="'+activeTabId+'"]')?.remove(); activateTab(activeTabId); renderTabs(); document.getElementById('url-input').value=''; }
+}
+function buildHomePage(){
+  return '<div class="home-panel"><div class="home-hero"><h1>NexusAI Playground</h1><p>Navega la web, proba APIs OpenAI-compatibles y gestiona tus modelos desde un solo lugar.</p></div><form class="home-search" onsubmit="homeSearch(event,this)"><label for="hs-input" class="sr-only">Buscar o navegar</label><input id="hs-input" type="text" placeholder="Busca en la web o pega una URL..."><button type="submit">Ir</button></form><div class="quick-links"><h2>Accesos rapidos</h2><div class="quick-grid"><a class="quick-card" href="#" onclick="openUrl(\'https://huggingface.co/spaces\',\'HuggingFace Spaces\');return false;"><span class="quick-icon">&#x1F917;</span><span class="quick-name">HuggingFace</span><span class="quick-desc">Spaces, modelos y datasets</span></a><a class="quick-card" href="#" onclick="openUrl(\'https://openrouter.ai\',\'OpenRouter\');return false;"><span class="quick-icon">&#x1F500;</span><span class="quick-name">OpenRouter</span><span class="quick-desc">100+ modelos gratis</span></a><a class="quick-card" href="#" onclick="openUrl(\'https://console.groq.com\',\'Groq\');return false;"><span class="quick-icon">&#x26A1;</span><span class="quick-name">Groq</span><span class="quick-desc">Inferencia ultrarrapida</span></a><a class="quick-card" href="#" onclick="openUrl(\'https://github.com/Luillycarp\',\'GitHub\');return false;"><span class="quick-icon">&#x1F419;</span><span class="quick-name">GitHub</span><span class="quick-desc">Tus repositorios</span></a><a class="quick-card" href="#" onclick="openUrl(\'https://n8n.io\',\'n8n\');return false;"><span class="quick-icon">&#x1F517;</span><span class="quick-name">n8n</span><span class="quick-desc">Workflow automation</span></a><a class="quick-card" href="#" onclick="openUrl(\'https://together.ai\',\'Together AI\');return false;"><span class="quick-icon">&#x1F9E0;</span><span class="quick-name">Together AI</span><span class="quick-desc">LLMs en la nube</span></a><a class="quick-card" href="#" onclick="openUrl(\'https://colab.research.google.com\',\'Google Colab\');return false;"><span class="quick-icon">&#x1F4D3;</span><span class="quick-name">Colab</span><span class="quick-desc">Notebooks GPU gratis</span></a><a class="quick-card" href="#" onclick="openApiTester();return false;"><span class="quick-icon">&#x1F9EA;</span><span class="quick-name">API Tester</span><span class="quick-desc">Proba tu endpoint</span></a></div></div><div class="api-panel" id="api-tester-panel"><div class="api-panel-header"><h2>API Tester &mdash; OpenAI Compatible</h2><span class="api-badge" id="api-model-badge">sin configurar</span></div><div class="api-body"><div class="field-row-2"><div class="field-row"><span class="field-label">ENDPOINT</span><input class="field-input" id="at-endpoint" type="text" placeholder="https://...hf.space/v1/chat/completions"></div><div class="field-row"><span class="field-label">MODELO</span><input class="field-input" id="at-model" type="text" placeholder="gemma-4-e4b-it"></div></div><div class="field-row"><span class="field-label">MENSAJE</span><textarea class="field-input" id="at-message" rows="3" placeholder="Cual es la diferencia entre RAG y fine-tuning?"></textarea></div><div class="field-row-2"><div class="field-row"><span class="field-label">MAX TOKENS</span><input class="field-input" id="at-max-tokens" type="number" value="256" min="1" max="8192"></div><div class="field-row"><span class="field-label">TEMPERATURE</span><input class="field-input" id="at-temp" type="number" value="0.7" step="0.05" min="0" max="2"></div></div><div class="api-actions"><button class="btn-primary" id="at-send-btn" onclick="sendApiRequest()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m22 2-7 20-4-9-9-4z"/></svg>Enviar</button><button class="btn-secondary" onclick="clearApiResponse()">Limpiar</button><button class="btn-secondary" onclick="loadFromSettings()">Cargar config</button></div><pre id="api-response" aria-live="polite"></pre></div></div></div>';
+}
+function attachHomeEvents(wrapper){ loadFromSettings(wrapper); }
+function openApiTester(){ const panel=document.getElementById('api-tester-panel'); if(panel)panel.scrollIntoView({behavior:'smooth'}); }
+function navigate(e){ if(e)e.preventDefault(); const input=document.getElementById('url-input').value.trim(); if(!input)return; resolveAndOpen(input,activeTabId); }
+function homeSearch(e,form){ e.preventDefault(); const input=form.querySelector('input').value.trim(); if(!input)return; resolveAndOpen(input,activeTabId); }
+function resolveAndOpen(input,tabId){
+  let url;
+  if(/^https?:\/\//i.test(input)){url=input;}
+  else if(/^[\w.-]+\.\w{2,}/.test(input)&&!input.includes(' ')){url='https://'+input;}
+  else{url=cfg.searchEngine+encodeURIComponent(input);}
+  openUrl(url,input,tabId);
+}
+function openUrl(url,title,tabId){
+  const id=tabId||activeTabId;
+  const tab=tabs.find(t=>t.id===id);
+  if(tab){ tab.type='iframe';tab.url=url;tab.title=(title||url).slice(0,30); document.querySelector('.tab-content[data-tab-id="'+id+'"]')?.remove(); renderTabs(); activateTab(id); document.getElementById('url-input').value=url; document.getElementById('status-url').textContent=url; setStatus('Cargando...','loading'); }
+}
+function navBack(){ const f=getActiveFrame(); if(f){try{f.contentWindow.history.back();}catch(e){}} }
+function navForward(){ const f=getActiveFrame(); if(f){try{f.contentWindow.history.forward();}catch(e){}} }
+function navReload(){ const f=getActiveFrame(); if(f){try{f.contentWindow.location.reload();setStatus('Recargando...','loading');}catch(e){}} }
+function getActiveFrame(){ return document.querySelector('.tab-content[data-tab-id="'+activeTabId+'"] iframe'); }
+function loadFromSettings(container){
+  const ep=document.getElementById('at-endpoint');
+  const mdl=document.getElementById('at-model');
+  const mt=document.getElementById('at-max-tokens');
+  const tmp=document.getElementById('at-temp');
+  const badge=document.getElementById('api-model-badge');
+  if(ep&&cfg.baseUrl)ep.value=cfg.baseUrl.endsWith('/chat/completions')?cfg.baseUrl:cfg.baseUrl.replace(/\/?$/,'/chat/completions');
+  if(mdl&&cfg.model)mdl.value=cfg.model;
+  if(mt)mt.value=cfg.maxTokens;
+  if(tmp)tmp.value=cfg.temperature;
+  if(badge)badge.textContent=cfg.model||'sin configurar';
+}
+async function sendApiRequest(){
+  const endpoint=document.getElementById('at-endpoint')?.value.trim();
+  const model=document.getElementById('at-model')?.value.trim();
+  const message=document.getElementById('at-message')?.value.trim();
+  const maxTokens=parseInt(document.getElementById('at-max-tokens')?.value)||256;
+  const temp=parseFloat(document.getElementById('at-temp')?.value)||0.7;
+  const respEl=document.getElementById('api-response');
+  const sendBtn=document.getElementById('at-send-btn');
+  if(!endpoint||!model||!message){showToast('Completa endpoint, modelo y mensaje.');return;}
+  respEl.className='visible streaming'; respEl.textContent='Enviando solicitud...';
+  sendBtn.disabled=true; setStatus('Generando respuesta...','loading');
+  const headers={'Content-Type':'application/json'};
+  if(cfg.apiKey)headers['Authorization']='Bearer '+cfg.apiKey;
+  const body={model,messages:[...(cfg.systemPrompt?[{role:'system',content:cfg.systemPrompt}]:[]),{role:'user',content:message}],max_tokens:maxTokens,temperature:temp,stream:true};
+  const startTime=performance.now();
+  try{
+    const res=await fetch(endpoint,{method:'POST',headers,body:JSON.stringify(body)});
+    if(!res.ok){const errText=await res.text();respEl.className='visible error-state';respEl.textContent='HTTP '+res.status+': '+errText;setStatus('Error '+res.status,'error');sendBtn.disabled=false;return;}
+    const reader=res.body.getReader();
+    const decoder=new TextDecoder();
+    let fullText=''; respEl.textContent='';
+    while(true){
+      const{done,value}=await reader.read();
+      if(done)break;
+      const chunk=decoder.decode(value,{stream:true});
+      const lines=chunk.split('\n');
+      for(const line of lines){
+        if(line.startsWith('data: ')){
+          const data=line.slice(6).trim();
+          if(data==='[DONE]')continue;
+          try{const json=JSON.parse(data);const delta=json.choices?.[0]?.delta?.content||'';fullText+=delta;respEl.textContent=fullText;respEl.scrollTop=respEl.scrollHeight;}catch(e){}
+        }
+      }
+    }
+    const elapsed=((performance.now()-startTime)/1000).toFixed(1);
+    respEl.className='visible'; setStatus('Completado en '+elapsed+'s','ready');
+    document.getElementById('status-time').textContent=elapsed+'s';
+  }catch(err){
+    respEl.className='visible error-state';
+    respEl.textContent='Error de red: '+err.message+'\n\nVerifica:\n- CORS habilitado en el servidor\n- URL correcta\n- API key valida';
+    setStatus('Error de conexion','error');
+  }
+  sendBtn.disabled=false;
+}
+function clearApiResponse(){const el=document.getElementById('api-response');if(el){el.textContent='';el.className='';}document.getElementById('status-time').textContent='';}
+function toggleSettings(){
+  const panel=document.getElementById('settings-panel');
+  const overlay=document.getElementById('settings-overlay');
+  const isOpen=panel.classList.contains('open');
+  if(!isOpen){document.getElementById('s-base-url').value=cfg.baseUrl;document.getElementById('s-api-key').value=cfg.apiKey;document.getElementById('s-model').value=cfg.model;document.getElementById('s-max-tokens').value=cfg.maxTokens;document.getElementById('s-temperature').value=cfg.temperature;document.getElementById('s-system').value=cfg.systemPrompt;document.getElementById('s-search-engine').value=cfg.searchEngine;document.getElementById('s-theme').value=cfg.theme;}
+  panel.classList.toggle('open',!isOpen); overlay.classList.toggle('open',!isOpen);
+}
+function saveSettings(){
+  cfg.baseUrl=document.getElementById('s-base-url').value.trim();
+  cfg.apiKey=document.getElementById('s-api-key').value.trim();
+  cfg.model=document.getElementById('s-model').value.trim();
+  cfg.maxTokens=parseInt(document.getElementById('s-max-tokens').value)||512;
+  cfg.temperature=parseFloat(document.getElementById('s-temperature').value)||0.7;
+  cfg.systemPrompt=document.getElementById('s-system').value.trim();
+  cfg.searchEngine=document.getElementById('s-search-engine').value;
+  applyThemeSetting(); loadFromSettings(); toggleSettings(); showToast('Configuracion guardada');
+}
+function setStatus(text,state){document.getElementById('status-text').textContent=text;const dot=document.getElementById('status-dot');dot.className='status-dot '+(state||'ready');}
+let toastTimer;
+function showToast(msg){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('show'),2800);}
+function escHtml(str){return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+document.addEventListener('keydown',(e)=>{
+  if((e.ctrlKey||e.metaKey)&&e.key==='t'){e.preventDefault();newTab();}
+  if((e.ctrlKey||e.metaKey)&&e.key==='w'){e.preventDefault();if(activeTabId)closeTab(activeTabId);}
+  if((e.ctrlKey||e.metaKey)&&e.key==='l'){e.preventDefault();document.getElementById('url-input').select();}
+  if(e.key==='Escape'){document.getElementById('settings-panel').classList.remove('open');document.getElementById('settings-overlay').classList.remove('open');}
+  if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){const at=document.getElementById('at-message');if(document.activeElement===at)sendApiRequest();}
+});
+createTab('Nueva pestana','home','');
+</script>
+</body>
+</html>
